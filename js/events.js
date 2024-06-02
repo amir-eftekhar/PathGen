@@ -30,6 +30,8 @@ function leftClick(event) {
       } else if (Vector.distance(mouse, p1) < 5) {
         path.splines[i].p1.data = 1;
         foundPoint = true;
+
+        
         break;
       } else if (Vector.distance(mouse, p2) < 5) {
         path.splines[i].p2.data = 1;
@@ -64,6 +66,8 @@ function rightClick(event) {
     } else if (Vector.distance(mouse, end) < 5) {
       path.removePoint(1);
     }
+    // Update path after removing points
+    path.update();
   }
 }
 
@@ -204,7 +208,6 @@ document.onkeydown = function(event) {
   }
 };
 
-
 decelerationSlider.onchange = function() {
   path.update();
 };
@@ -254,3 +257,11 @@ canvasQuery.onmousemove = function(event) {
   }
   mouseMove(event);
 };
+
+// Function to clear highlights
+function clearHighlight() {
+  highlightList = [];
+  highlightCircles = [];
+  newSpeedBox = { start: new Vector(0, 0), end: new Vector(0, 0) };
+  newSpeedText.text = '';
+}

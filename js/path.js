@@ -150,10 +150,10 @@ class Path {
         theta = theta;
     } else if (deltaX < 0 && deltaY < 0) { // 3rd quadrant
       console.log('3rd quadrant');
-        theta = 360 + theta;
+        theta =  -theta;
     } else { // 4th quadrant
       console.log('4th quadrant');
-        theta = 360 + theta;
+        theta = -theta;
     }
 
     // Adjust theta to be between 0 and 360
@@ -284,11 +284,12 @@ function clearCanvas(reverseMode) {
   Line.instances = [];
   Circle.instances = [];
   Rectangle.instances = [];
-  SimpleText.instances = SimpleText.instances.filter(text => text !== cursorCoordinates); // Preserve cursorCoordinates instance
-
+  SimpleText.instances = [];
   path = new Path(new Spline(new Vector(0, 0), new Vector(0, 0), new Vector(0, 0), new Vector(0, 0)), reverseMode);
   render();
+  renderRobot({ x: 0, y: 0, theta: 0 });
 }
+
 
 document.getElementById('clearCanvasBtn').onclick = function() {
   clearCanvas(reverseMode);

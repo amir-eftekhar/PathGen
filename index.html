@@ -3,19 +3,20 @@
 <head>
     <meta charset="utf-8"/>
     <title>Path Generator</title>
-    <link id="logo" rel="icon" type="image" href="logo_circle.png">
+    <link id="logo" rel="icon" type="image" href="CLogo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Teko:wght@300&display=swap" rel="stylesheet">
 </head>
 
-<body class=" mt-100 bg-black min-h-screen flex flex-col items-center">
+<body class="mt-100 bg-black min-h-screen flex flex-col items-center">
+    <div class="m-2" style="position: absolute; top: -10; left: 0;">
+        <p style="font-family: 'Russo One', sans-serif; font-size: 55px; color: white;">5327C</p>
+    </div>
     <div class="p-4 bg-black shadow-md flex justify-center">
         <div class="flex flex-col space-y-4 items-center">
-            <!--div class="flex space-x-4">
-                <button id="clearCanvasBtn" class="bg-blue-300 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Clear</button>
-                <button onclick="path.generatePath()" class="bg-blue-300 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Generate Path</button>
-                <button type="button" id="reverseBtn" class="bg-red-300 hover:bg-red-600 text-white font-bold py-2 px-4 rounded mt-4">Reverse</button>
-            </div!-->
             <canvas id="fieldCanvas" width="693" height="693" class="shadow-lg border-2"></canvas>
         </div>
         <div class="ml-10 flex flex-col space-y-4 bg-black p-4 rounded shadow-md">
@@ -30,7 +31,7 @@
                 <output class="text" id="maxSpeedVal">100</output>
             </div>
             <div class="flex flex-col space-y-2">
-                <label for="multiplierSlider" class="text-gray-700"> Point distance</label>
+                <label for="multiplierSlider" class="text-gray-700">Point distance</label>
                 <input type="range" value="10" min="1" max="50" step="1" oninput="updateSpacing(this.value)" id="multiplierSlider" class="w-40">
                 <span id="multiplierValue">10</span>
             </div>
@@ -41,29 +42,24 @@
                     <option value="constant">Constant</option>
                 </select>
             </div>
-
+            <div class="flex flex-col space-y-2">
+                <label for="robotWidthSlider" class="text-gray-700">Robot Width</label>
+                <input type="range" value="40" min="10" max="100" step="1" oninput="this.nextElementSibling.value = this.value" id="robotWidthSlider" class="w-40">
+                <output class="text" id="robotWidthVal">40</output>
+            </div>
+            <div class="flex flex-col space-y-2">
+                <label for="robotHeightSlider" class="text-gray-700">Robot Height</label>
+                <input type="range" value="20" min="10" max="100" step="1" oninput="this.nextElementSibling.value = this.value" id="robotHeightSlider" class="w-40">
+                <output class="text" id="robotHeightVal">20</output>
+            </div>
             <button id="clearCanvasBtn" class="bg-blue-300 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Clear</button>
-                <button onclick="path.generatePath()" class="bg-blue-300 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Generate Path</button>
-                <button type="button" id="reverseBtn" class="bg-red-300 hover:bg-red-600 text-white font-bold py-2 px-4 rounded mt-4">Reverse</button>
-            <div class="flex space-x-2">
-             
-    </div>
-
-    <div class="hidden flex-col items-center mt-4" id="debugControls">
-        <input type="file" id="uploadDebugBtn" class="hidden">
-        <label for="uploadDebugBtn" id="uploadDebugLabel" class="bg-blue-300 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded cursor-pointer mb-2">Upload Robot Debug Data</label>
-        <div class="flex space-x-2 mb-4">
-            <button type="button" id="debugBackBtn" class="bg-blue-300 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">&#x23EE;</button>
-            <button type="button" id="debugPauseBtn" class="bg-blue-300 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">&#x23EF;</button>
-            <button type="button" id="debugForwardBtn" class="bg-blue-300 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">&#x23ED;</button>
+            <button onclick="path.generatePath()" class="bg-blue-300 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Generate Path</button>
+            <button type="button" id="reverseBtn" class="bg-red-300 hover:bg-red-600 text-white font-bold py-2 px-4 rounded mt-4">Reverse</button>
+            <textarea id="codeArea" class="bg-gray-100 text-black p-2 mt-4 w-full h-32" placeholder="Paste your generated code here..."></textarea>
+            <button id="startSimBtn" class="bg-green-300 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mt-4">Start Simulation</button>
         </div>
-        <input type="range" value="0" min="0" max="100" step="1" oninput="this.nextElementSibling.value = this.value" id="timeSlider" class="w-40">
     </div>
 
-    <div class="graph flex flex-col items-center mt-4" id="graphContainer">
-        <canvas id="leftMotorCanvas" class="mb-4"></canvas>
-        <canvas id="rightMotorCanvas"></canvas>
-    </div>
 
     <script src="js/vector.js"></script>
     <script src="js/graphics.js"></script>
@@ -71,10 +67,16 @@
     <script src="js/events.js"></script>
     <script src="js/main.js"></script>
     <script src="js/settings.js"></script>
+    <script src="js/simulator.js"></script>
     <script>
-      document.getElementById('speedMode').onchange = function(event) {
-        path.setSpeedMode(event.target.value);
-      };
+        document.getElementById('speedMode').onchange = function(event) {
+            path.setSpeedMode(event.target.value);
+        };
+
+        document.getElementById('startSimBtn').onclick = function() {
+            const code = document.getElementById('codeArea').value;
+            startSimulation(code);
+        };
     </script>
 </body>
 </html>
