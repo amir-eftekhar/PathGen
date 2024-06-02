@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Path Generator</title>
+    <link id="logo" rel="icon" type="image" href="logo_circle.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-gradient-to-r from-blue-800 to-blue-900 min-h-screen flex flex-col items-center">
+    <div class="w-full p-4 bg-white shadow-md flex justify-center">
+        <div class="flex flex-col space-y-4 items-center">
+            <div class="flex space-x-4">
+                <button id="clearCanvasBtn" class="bg-blue-300 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Clear</button>
+                <button onclick="path.generatePath()" class="bg-blue-300 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Generate Path</button>
+                <button type="button" id="reverseBtn" class="bg-red-300 hover:bg-red-600 text-white font-bold py-2 px-4 rounded mt-4">Reverse</button>
+            </div>
+            <canvas id="fieldCanvas" width="693" height="693" class="shadow-lg border-2"></canvas>
+        </div>
+        <div class="ml-10 flex flex-col space-y-4 bg-white p-4 rounded shadow-md">
+            <div class="flex flex-col space-y-2">
+                <label for="decelerationSlider" class="text-gray-700">Max Deceleration</label>
+                <input type="range" value="20" min="0" max="200" step="0.01" oninput="this.nextElementSibling.value = this.value" id="decelerationSlider" class="w-40">
+                <output class="text" id="decelVal">20</output>
+            </div>
+            <div class="flex flex-col space-y-2">
+                <label for="maxSpeedSlider" class="text-gray-700">Max Speed</label>
+                <input type="range" value="62.83" min="0" max="200" step="0.5" oninput="this.nextElementSibling.value = this.value" id="maxSpeedSlider" class="w-40">
+                <output class="text" id="maxSpeedVal">100</output>
+            </div>
+            <div class="flex flex-col space-y-2">
+                <label for="multiplierSlider" class="text-gray-700"> Point distance</label>
+                <input type="range" value="10" min="1" max="50" step="1" oninput="updateSpacing(this.value)" id="multiplierSlider" class="w-40">
+                <span id="multiplierValue">10</span>
+            </div>
+            <div class="flex flex-col space-y-2">
+                <label for="speedMode" class="text-gray-700">Speed Mode</label>
+                <select id="speedMode" class="w-40">
+                    <option value="calculated">Calculated</option>
+                    <option value="constant">Constant</option>
+                </select>
+            </div>
+            <div class="flex space-x-2">
+             
+    </div>
+
+    <div class="hidden flex-col items-center mt-4" id="debugControls">
+        <input type="file" id="uploadDebugBtn" class="hidden">
+        <label for="uploadDebugBtn" id="uploadDebugLabel" class="bg-blue-300 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded cursor-pointer mb-2">Upload Robot Debug Data</label>
+        <div class="flex space-x-2 mb-4">
+            <button type="button" id="debugBackBtn" class="bg-blue-300 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">&#x23EE;</button>
+            <button type="button" id="debugPauseBtn" class="bg-blue-300 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">&#x23EF;</button>
+            <button type="button" id="debugForwardBtn" class="bg-blue-300 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">&#x23ED;</button>
+        </div>
+        <input type="range" value="0" min="0" max="100" step="1" oninput="this.nextElementSibling.value = this.value" id="timeSlider" class="w-40">
+    </div>
+
+    <div class="graph flex flex-col items-center mt-4" id="graphContainer">
+        <canvas id="leftMotorCanvas" class="mb-4"></canvas>
+        <canvas id="rightMotorCanvas"></canvas>
+    </div>
+
+    <script src="js/vector.js"></script>
+    <script src="js/graphics.js"></script>
+    <script src="js/path.js"></script>
+    <script src="js/events.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/settings.js"></script>
+    <script>
+      document.getElementById('speedMode').onchange = function(event) {
+        path.setSpeedMode(event.target.value);
+      };
+    </script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+#fieldCanvas {
+    border: 2px solid black;
+    background-image: url('field.png');
+    background-size: cover;
+}
