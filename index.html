@@ -23,17 +23,17 @@
             <div class="flex flex-col space-y-2">
                 <label for="decelerationSlider" class="text-gray-700">Max Deceleration</label>
                 <input type="range" value="20" min="0" max="200" step="0.01" oninput="this.nextElementSibling.value = this.value" id="decelerationSlider" class="w-40">
-                <output class="text" id="decelVal">20</output>
+                <output class="text" id="decelVal" style="color: white;">20</output>
             </div>
             <div class="flex flex-col space-y-2">
                 <label for="maxSpeedSlider" class="text-gray-700">Max Speed</label>
                 <input type="range" value="62.83" min="0" max="200" step="0.5" oninput="this.nextElementSibling.value = this.value" id="maxSpeedSlider" class="w-40">
-                <output class="text" id="maxSpeedVal">100</output>
+                <output class="text" id="maxSpeedVal" style="color: white; " 100</output>
             </div>
             <div class="flex flex-col space-y-2">
                 <label for="multiplierSlider" class="text-gray-700">Point distance</label>
                 <input type="range" value="10" min="1" max="50" step="1" oninput="updateSpacing(this.value)" id="multiplierSlider" class="w-40">
-                <span id="multiplierValue">10</span>
+                <span id="multiplierValue" style="color: white; ">10</span>
             </div>
             <div class="flex flex-col space-y-2">
                 <label for="speedMode" class="text-gray-700">Speed Mode</label>
@@ -45,12 +45,12 @@
             <div class="flex flex-col space-y-2">
                 <label for="robotWidthSlider" class="text-gray-700">Robot Width</label>
                 <input type="range" value="40" min="10" max="100" step="1" oninput="this.nextElementSibling.value = this.value" id="robotWidthSlider" class="w-40">
-                <output class="text" id="robotWidthVal">40</output>
+                <output class="text" id="robotWidthVal" style="color: white; ">40</output>
             </div>
             <div class="flex flex-col space-y-2">
                 <label for="robotHeightSlider" class="text-gray-700">Robot Height</label>
                 <input type="range" value="20" min="10" max="100" step="1" oninput="this.nextElementSibling.value = this.value" id="robotHeightSlider" class="w-40">
-                <output class="text" id="robotHeightVal">20</output>
+                <output class="text" id="robotHeightVal" style="color: white; ">20</output>
             </div>
             <button id="clearCanvasBtn" class="bg-blue-300 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Clear</button>
             <button onclick="path.generatePath()" class="bg-blue-300 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Generate Path</button>
