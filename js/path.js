@@ -104,7 +104,7 @@ class Path {
     });
   }
 
- generateAutonomousPath() {
+  generateAutonomousPath() {
     let movements = [];
     let firstPoint = this.points[0];
     let secondPoint = this.points[1];
@@ -129,39 +129,24 @@ class Path {
         } else {
             flag = point.reverse ? 'gfr::Flags::THRU | gfr::Flags::REVERSE' : 'gfr::Flags::THRU';
         }
-        const speed = this.speedMode === 'constant' ? maxSpeedSlider.value : point.data2.toFixed(1);
+        const speed = maxSpeedSlider.value;
         movements.push(`chassis.move({${point.x.toFixed(1)}, ${point.y.toFixed(1)}, ${theta.toFixed(1)}}, boomerang, ${speed}, ${flag});`);
     }
-    console.log(movements.join('\n'));
+
+    const generatedCode = movements.join('\n');
+    console.log(generatedCode);
+
+    document.getElementById('generatedCodeArea').value = generatedCode;
 }
 
- calculateTheta(point1, point2) {
+calculateTheta(point1, point2) {
   console.log(`calculating theta between ${point1.x}, ${point1.y} and ${point2.x}, ${point2.y}`);
-    let deltaX = point2.x - point1.x;
-    let deltaY = point2.y - point1.y;
-    let theta = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
-    console.log(`deltaX: ${deltaX}, deltaY: ${deltaY}`);
-    console.log(`theta: ${theta}`);
-    if (deltaX >= 0 && deltaY >= 0) { 
-      console.log('1st quadrant');
-        theta = theta;
-    } else if (deltaX < 0 && deltaY >= 0) { // 2nd quadrant
-      console.log('2nd quadrant');
-        theta = theta;
-    } else if (deltaX < 0 && deltaY < 0) { // 3rd quadrant
-      console.log('3rd quadrant');
-        theta =  -theta;
-    } else { // 4th quadrant
-      console.log('4th quadrant');
-        theta = -theta;
-    }
-
-    // Adjust theta to be between 0 and 360
-    if (theta < 0) {
-        theta = 360 + theta;
-    }
-
-    return theta;
+  let deltaX = point2.x - point1.x;
+  let deltaY = point2.y - point1.y;
+  let theta = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+  console.log(`deltaX: ${deltaX}, deltaY: ${deltaY}`);
+  console.log(`theta: ${theta}`);
+  return theta;
 }
   generatePath() {
     this.update();

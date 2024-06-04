@@ -4,8 +4,15 @@ document.getElementById('speedMode').onchange = function(event) {
 
 document.getElementById('startSimBtn').onclick = function() {
     const code = document.getElementById('codeArea').value;
+    stopSimulationFlag = false; // Reset the stop flag when starting a new simulation
     startSimulation(code);
 };
+
+document.getElementById('stopSimBtn').onclick = function() {
+    stopSimulationFlag = true;
+};
+
+let stopSimulationFlag = false;
 
 function startSimulation(code) {
     const commands = code.split('\n').filter(cmd => cmd.trim().length > 0);
@@ -14,7 +21,7 @@ function startSimulation(code) {
     const robot = {
         x: 0,
         y: 0,
-        theta: 0,
+        theta: 90, // Start facing the top of the screen (90 degrees in the new system)
         width: Number(document.getElementById('robotWidthSlider').value),
         height: Number(document.getElementById('robotHeightSlider').value),
         speed: 100
@@ -39,15 +46,15 @@ function startSimulation(code) {
     }
 
     function executeCommand(command) {
-        if (!command) return;
+        if (!command || stopSimulationFlag) return;
         
         if (command.type === 'set_pose') {
             robot.x = command.x;
             robot.y = command.y;
-            robot.theta = command.theta;
+            robot.theta = adjustAngle(command.theta);
             renderRobot(robot);
             commandIndex++;
-            if (commandIndex < commands.length) {
+            if (commandIndex < commands.length && !stopSimulationFlag) {
                 setTimeout(() => executeCommand(parseCommand(commands[commandIndex])), 500);
             }
         } else if (command.type === 'move') {
@@ -56,25 +63,27 @@ function startSimulation(code) {
             const startTheta = robot.theta;
             const endX = command.x;
             const endY = command.y;
-            const endTheta = command.theta;
+            const endTheta = adjustAngle(command.theta);
             const speed = command.speed;
 
             const totalTime = 2000; // 2 seconds per movement
-            const steps = 100;
+            const steps = 100; // Increase steps for smoother animation
             const interval = totalTime / steps;
 
             let step = 0;
 
             function animateStep() {
-                if (step <= steps) {
+                if (step <= steps && !stopSimulationFlag) {
                     const progress = step / steps;
                     robot.x = startX + (endX - startX) * progress;
                     robot.y = startY + (endY - startY) * progress;
                     robot.theta = interpolateAngle(startTheta, endTheta, progress);
                     renderRobot(robot);
                     step++;
-                    setTimeout(animateStep, interval);
-                } else {
+                    requestAnimationFrame(animateStep);
+                } else if (!stopSimulationFlag) {
+                    robot.theta = endTheta; // Ensure final angle is set correctly
+                    renderRobot(robot); // Render final position and angle
                     commandIndex++;
                     if (commandIndex < commands.length) {
                         executeCommand(parseCommand(commands[commandIndex]));
@@ -84,6 +93,17 @@ function startSimulation(code) {
 
             animateStep();
         }
+    }
+
+    function adjustAngle(theta) {
+        // Adjust the angle to the new coordinate system
+        let adjustedTheta = theta - 90;
+        if (adjustedTheta < -180) {
+            adjustedTheta += 360;
+        } else if (adjustedTheta > 180) {
+            adjustedTheta -= 360;
+        }
+        return -adjustedTheta;
     }
 
     function interpolateAngle(startTheta, endTheta, progress) {
