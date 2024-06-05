@@ -1,7 +1,3 @@
-document.getElementById('speedMode').onchange = function(event) {
-    path.setSpeedMode(event.target.value);
-};
-
 document.getElementById('startSimBtn').onclick = function() {
     const code = document.getElementById('codeArea').value;
     stopSimulationFlag = false; // Reset the stop flag when starting a new simulation
@@ -39,7 +35,8 @@ function startSimulation(code) {
             if (match) {
                 const [x, y, theta] = match[1].split(',').map(Number);
                 const speed = Number(match[2]);
-                return { type: 'move', x, y, theta, speed };
+                const reverse = command.includes('gfr::Flags::REVERSE');
+                return { type: 'move', x, y, theta, speed, reverse };
             }
         }
         return null;
@@ -63,13 +60,14 @@ function startSimulation(code) {
             const startTheta = robot.theta;
             const endX = command.x;
             const endY = command.y;
-            const endTheta = adjustAngle(command.theta);
-            const speed = command.speed;
+            let endTheta = adjustAngle(command.theta);
+            const reverse = command.reverse;
+            
+            if (reverse) {
+                endTheta = adjustAngle(command.theta + 180); // Adjust theta for reverse mode
+            }
 
-            const totalTime = 2000; // 2 seconds per movement
-            const steps = 100; // Increase steps for smoother animation
-            const interval = totalTime / steps;
-
+            const steps = (21 - Number(document.getElementById('SimSpeed').value)) * Number(document.getElementById('multiplierSlider').value); 
             let step = 0;
 
             function animateStep() {
@@ -78,12 +76,12 @@ function startSimulation(code) {
                     robot.x = startX + (endX - startX) * progress;
                     robot.y = startY + (endY - startY) * progress;
                     robot.theta = interpolateAngle(startTheta, endTheta, progress);
-                    renderRobot(robot);
+                    renderRobot(robot, reverse); // Pass reverse flag to renderRobot
                     step++;
                     requestAnimationFrame(animateStep);
                 } else if (!stopSimulationFlag) {
-                    robot.theta = endTheta; // Ensure final angle is set correctly
-                    renderRobot(robot); // Render final position and angle
+                    robot.theta = endTheta; 
+                    renderRobot(robot, reverse); 
                     commandIndex++;
                     if (commandIndex < commands.length) {
                         executeCommand(parseCommand(commands[commandIndex]));
@@ -116,15 +114,21 @@ function startSimulation(code) {
     executeCommand(parseCommand(commands[commandIndex]));
 }
 
-function renderRobot(robot) {
+function renderRobot(robot, reverse = false) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     render();
     ctx.save();
     ctx.translate(robot.x * imgPixelsPerInch + imgHalfActualWidth, imgActualWidth - robot.y * imgPixelsPerInch - imgHalfActualWidth);
     ctx.rotate((robot.theta * Math.PI) / 180);
     ctx.fillStyle = 'black';
-    ctx.fillRect(-robot.width / 2, -robot.height / 2, robot.width, robot.height); // Adjust rectangle size based on sliders
-    ctx.fillStyle = 'red';
-    ctx.fillRect(-robot.width / 2, -robot.height / 2, robot.width, 5); // Draw the front side of the robot in red
+    if (reverse) {
+        ctx.fillRect(-robot.width / 2, -robot.height / 2, robot.width, robot.height);
+        ctx.fillStyle = 'red';
+        ctx.fillRect(-robot.width / 2, robot.height / 2 - 5, robot.width, 5); 
+    } else {
+        ctx.fillRect(-robot.width / 2, -robot.height / 2, robot.width, robot.height); 
+        ctx.fillStyle = 'red';
+        ctx.fillRect(-robot.width / 2, -robot.height / 2, robot.width, 5); 
+    }
     ctx.restore();
 }

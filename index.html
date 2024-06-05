@@ -14,46 +14,39 @@
 <body class="mt-100 bg-black min-h-screen flex flex-col items-center">
     <div class="m-2" style="position: absolute; top: -10; left: 0;">
         <p style="font-family: 'Russo One', sans-serif; font-size: 55px; color: white;">5327C</p>
+        <div class="flex flex-col space-y-4 bg-black p-4 rounded shadow-md">
+            <textarea id="generatedCodeArea" class="bg-gray-100 text-black p-2 rounded-md mt-4 w-full h-64" placeholder="Generated path code will appear here..."></textarea>
+            <button id="copyCodeBtn" class="bg-blue-300 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-2">Copy Code</button>
+            <button id="clearCodeBtn" class="bg-red-300 hover:bg-red-600 text-white font-bold py-2 px-4 rounded mt-2">Clear Code</button>
+        </div>
     </div>
     <div class="p-4 bg-black shadow-md flex justify-center">
         <div class="flex flex-col space-y-4 items-center">
-            <div class="flex flex-col space-y-4 bg-black p-4 rounded shadow-md" style="position: absolute; top: 80px; left:0 ;">
-                <textarea id="generatedCodeArea" class="bg-gray-100 text-black p-2 rounded-md mt-4 w-full h-64" placeholder="Generated path code will appear here..."></textarea>
-                <button id="copyCodeBtn" class="bg-blue-300 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-2">Copy Code</button>
-                <button id="clearCodeBtn" class="bg-red-300 hover:bg-red-600 text-white font-bold py-2 px-4 rounded mt-2">Clear Code</button>
-            </div>
             <canvas id="fieldCanvas" width="693" height="693" class="shadow-lg border-2"></canvas>
         </div>
         <div class="ml-10 flex flex-col space-y-4 bg-black p-4 rounded shadow-md">
             <div class="flex flex-col space-y-2">
-                <label for="decelerationSlider" class="text-gray-700">Max Deceleration</label>
+                <label for="decelerationSlider" class="text-gray-400">Max Deceleration</label>
                 <input type="range" value="20" min="0" max="200" step="0.01" oninput="this.nextElementSibling.value = this.value" id="decelerationSlider" class="w-40">
                 <output class="text" id="decelVal" style="color: white;">20</output>
             </div>
             <div class="flex flex-col space-y-2">
-                <label for="maxSpeedSlider" class="text-gray-700">Max Speed</label>
+                <label for="maxSpeedSlider" class="text-gray-400">Max Speed</label>
                 <input type="range" value="62.83" min="0" max="200" step="0.5" oninput="this.nextElementSibling.value = this.value" id="maxSpeedSlider" class="w-40">
                 <output class="text" id="maxSpeedVal" style="color: white;">100</output>
             </div>
             <div class="flex flex-col space-y-2">
-                <label for="multiplierSlider" class="text-gray-700">Point distance</label>
+                <label for="multiplierSlider" class="text-gray-400">Point distance</label>
                 <input type="range" value="10" min="1" max="50" step="1" oninput="updateSpacing(this.value)" id="multiplierSlider" class="w-40">
                 <span id="multiplierValue" style="color: white;">10</span>
             </div>
-            <!--div class="flex flex-col space-y-2"-->
-                <!--label for="speedMode" class="text-gray-700">Speed Mode</label-->
-                <!--select id="speedMode" class="w-40">
-                    <option value="calculated">Calculated</option>
-                    <option value="constant">Constant</option>
-                </select-->
-            <!--/div-->
             <div class="flex flex-col space-y-2">
-                <label for="robotWidthSlider" class="text-gray-700">Robot Width</label>
+                <label for="robotWidthSlider" class="text-gray-400">Robot Width</label>
                 <input type="range" value="40" min="10" max="100" step="1" oninput="this.nextElementSibling.value = this.value" id="robotWidthSlider" class="w-40">
                 <output class="text" id="robotWidthVal" style="color: white;">40</output>
             </div>
             <div class="flex flex-col space-y-2">
-                <label for="robotHeightSlider" class="text-gray-700">Robot Height</label>
+                <label for="robotHeightSlider" class="text-gray-400">Robot Height</label>
                 <input type="range" value="20" min="10" max="100" step="1" oninput="this.nextElementSibling.value = this.value" id="robotHeightSlider" class="w-40">
                 <output class="text" id="robotHeightVal" style="color: white;">20</output>
             </div>
@@ -66,8 +59,13 @@
                 <textarea id="codeArea" class="bg-gray-100 text-black p-2 rounded-md mt-4 w-full h-64" placeholder="Paste your generated code here..."></textarea>
                 <button id="startSimBtn" class="bg-green-300 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mt-4">Start Simulation</button>
                 <button id="stopSimBtn" class="bg-red-300 hover:bg-red-600 text-white font-bold py-2 px-4 rounded mt-4">Stop Simulation</button>
-                <button id="startTestBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">Start Test</button>
-                <button id="stopTestBtn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mt-4">Stop Test</button>
+                <div class="flex flex-col space-y-2">
+                <label for="SimSpeed" class="text-gray-400">Simulation Speed</label>
+                <input type="range" value="10" min="1" max="20" step="1" oninput="this.nextElementSibling.value = this.value" id="SimSpeed">
+                <output class="text" id="SimulationSpeedOutput" style="color: white;">10</output>
+                </div>
+                <!--button id="startTestBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">Start Test</button>
+                <button id="stopTestBtn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mt-4">Stop Test</button-->
             </div>
         </div>
     </div>
@@ -81,22 +79,20 @@
     <script src="js/simulator.js"></script>
     <script src="js/test.js"></script>
     <script>
-        document.getElementById('speedMode').onchange = function(event) {
-            path.setSpeedMode(event.target.value);
-        };
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.getElementById('copyCodeBtn').onclick = function() {
+                const code = document.getElementById('generatedCodeArea').value;
+                navigator.clipboard.writeText(code).then(function() {
+                    alert('Code copied to clipboard!');
+                }, function(err) {
+                    alert('Failed to copy code: ', err);
+                });
+            };
 
-        document.getElementById('copyCodeBtn').onclick = function() {
-            const code = document.getElementById('generatedCodeArea').value;
-            navigator.clipboard.writeText(code).then(function() {
-                alert('Code copied to clipboard!');
-            }, function(err) {
-                alert('Failed to copy code: ', err);
-            });
-        };
-
-        document.getElementById('clearCodeBtn').onclick = function() {
-            document.getElementById('generatedCodeArea').value = '';
-        };
+            document.getElementById('clearCodeBtn').onclick = function() {
+                document.getElementById('generatedCodeArea').value = '';
+            };
+        });
     </script>
 </body>
 </html>

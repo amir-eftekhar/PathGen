@@ -1,4 +1,4 @@
-document.getElementById('startTestBtn').onclick = function() {
+/*document.getElementById('startTestBtn').onclick = function() {
     stopTestFlag = false; // Reset the stop flag when starting a new test
     startTest();
 };
@@ -6,7 +6,7 @@ document.getElementById('startTestBtn').onclick = function() {
 document.getElementById('stopTestBtn').onclick = function() {
     stopTestFlag = true;
 };
-
+*/
 let stopTestFlag = false;
 
 function startTest() {
