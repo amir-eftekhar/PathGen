@@ -207,10 +207,11 @@ document.onkeydown = function(event) {
     }
   }
 };
-
+/*
 decelerationSlider.onchange = function() {
   path.update();
 };
+*/
 
 maxSpeedSlider.onchange = function() {
   path.update();

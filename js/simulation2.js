@@ -17,7 +17,7 @@ function startSimulation(code) {
     const robot = {
         x: 0,
         y: 0,
-        theta: 90, // Start facing the top of the screen (90 degrees in the new system)
+        theta: 90, 
         width: Number(document.getElementById('robotWidthSlider').value),
         height: Number(document.getElementById('robotHeightSlider').value),
         speed: 100
@@ -42,7 +42,6 @@ function startSimulation(code) {
         return null;
     }
 
-
     function executeCommand(command) {
         if (!command || stopSimulationFlag) return;
         
@@ -63,14 +62,17 @@ function startSimulation(code) {
             const endY = command.y;
             let endTheta = adjustAngle(command.theta);
             const reverse = command.reverse;
-            const speed = command.speed;
+            let speed = command.speed;
             
             if (reverse) {
                 endTheta = adjustAngle(command.theta + 180); // Adjust theta for reverse mode
             }
-            let simSpeed = Number(document.getElementById('SimSpeed').value);
-            let steps = Math.max(2, ((50 / speed) * Number(document.getElementById('multiplierSlider').value) * (51 - simSpeed))/2);
 
+            // Calculate curvature and adjust speed
+            const curvature = calculateCurvature(startX, startY, endX, endY, startTheta, endTheta);
+            speed = adjustSpeedBasedOnCurvature(speed, curvature);
+
+            let steps = Math.max(1, (100 / speed) * Number(document.getElementById('multiplierSlider').value)); 
             let step = 0;
 
             function animateStep() {
@@ -112,6 +114,23 @@ function startSimulation(code) {
         if (delta > 180) delta -= 360;
         if (delta < -180) delta += 360;
         return startTheta + delta * progress;
+    }
+
+    function calculateCurvature(x1, y1, x2, y2, theta1, theta2) {
+        // Calculate the curvature of the path based on the change in angle
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const dtheta = theta2 - theta1;
+        return Math.abs(dtheta / distance);
+    }
+
+    function adjustSpeedBasedOnCurvature(speed, curvature) {
+        const maxCurvature = 1; // Define the maximum curvature
+        const minSpeed = 20; // Define the minimum speed
+        const maxSpeed = 100; // Define the maximum speed
+        const adjustedSpeed = Math.max(minSpeed, maxSpeed - (curvature / maxCurvature) * (maxSpeed - minSpeed));
+        return adjustedSpeed;
     }
 
     executeCommand(parseCommand(commands[commandIndex]));

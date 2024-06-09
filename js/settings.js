@@ -1,13 +1,37 @@
 /**
  * Global objects
  */
-const decelerationSlider = document.getElementById('decelerationSlider');
-const maxSpeedSlider = document.getElementById('maxSpeedSlider');
-const multiplierSlider = document.getElementById('multiplierSlider');
 
-const decelerationText = document.getElementById('decelVal');
-const maxSpeedText = document.getElementById('maxSpeedVal');
-const multiplierText = document.getElementById('multiplierVal');
+let maxSpeedSlider = document.getElementById('maxSpeedSlider');
+let multiplierSlider = document.getElementById('multiplierSlider');
+
+let decelerationText = document.getElementById('decelVal');
+let maxSpeedText = document.getElementById('maxSpeedVal');
+let multiplierText = document.getElementById('multiplierVal');
+const calcRadiusOrientationSlider = document.getElementById('calcRadiusOrientation');
+const calcRadiusOrientationOutput = document.getElementById('calcRadiusOrientationOutput');
+const wheelRadiusSlider = document.getElementById('wheelRadius');
+const wheelRadiusOutput = document.getElementById('wheelRadiusOutput');
+const frictionCoefficientSlider = document.getElementById('frictionCoefficient');
+const frictionCoefficientOutput = document.getElementById('frictionCoefficientOutput');
+const maxRPMSlider = document.getElementById('maxRPM');
+const maxRPMOutput = document.getElementById('maxRPMOutput');
+
+calcRadiusOrientationSlider.oninput = function() {
+    calcRadiusOrientationOutput.value = this.value;
+}
+
+wheelRadiusSlider.oninput = function() {
+    wheelRadiusOutput.value = this.value;
+}
+
+frictionCoefficientSlider.oninput = function() {
+    frictionCoefficientOutput.value = this.value;
+}
+
+maxRPMSlider.oninput = function() {
+    maxRPMOutput.value = this.value;
+}
 
 
 let path;

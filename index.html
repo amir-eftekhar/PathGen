@@ -18,27 +18,41 @@
             <textarea id="generatedCodeArea" class="bg-gray-100 text-black p-2 rounded-md mt-4 w-full h-64" placeholder="Generated path code will appear here..."></textarea>
             <button id="copyCodeBtn" class="bg-blue-300 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-2">Copy Code</button>
             <button id="clearCodeBtn" class="bg-red-300 hover:bg-red-600 text-white font-bold py-2 px-4 rounded mt-2">Clear Code</button>
+            <button id="openPopupBtn" class="bg-yellow-300 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded mt-2">Adjust settings</button>
+        </div>
         </div>
     </div>
+    
     <div class="p-4 bg-black shadow-md flex justify-center">
         <div class="flex flex-col space-y-4 items-center">
             <canvas id="fieldCanvas" width="693" height="693" class="shadow-lg border-2"></canvas>
         </div>
         <div class="ml-10 flex flex-col space-y-4 bg-black p-4 rounded shadow-md">
-            <div class="flex flex-col space-y-2">
+            <!--div class="flex flex-col space-y-2">
                 <label for="decelerationSlider" class="text-gray-400">Max Deceleration</label>
                 <input type="range" value="20" min="0" max="200" step="0.01" oninput="this.nextElementSibling.value = this.value" id="decelerationSlider" class="w-40">
                 <output class="text" id="decelVal" style="color: white;">20</output>
-            </div>
+            </div-->
             <div class="flex flex-col space-y-2">
                 <label for="maxSpeedSlider" class="text-gray-400">Max Speed</label>
                 <input type="range" value="75" min="0" max="100" step="0.5" oninput="this.nextElementSibling.value = this.value" id="maxSpeedSlider" class="w-40">
                 <output class="text" id="maxSpeedVal" style="color: white;">75</output>
             </div>
             <div class="flex flex-col space-y-2">
+                <div class="flex flex-col space-y-2">
+                    <label for="minSpeedSlider" class="text-gray-400">Minimum Speed</label>
+                    <input type="range" value="50" min="0" max="100" step="0.5" oninput="this.nextElementSibling.value = this.value" id="minSpeedSlider" class="w-40">
+                    <output class="text" id="minSpeedVal" style="color: white;">50</output>
+                </div>
+                <div class="flex flex-col space-y-2">
                 <label for="multiplierSlider" class="text-gray-400">Point distance</label>
                 <input type="range" value="10" min="1" max="50" step="1" oninput="updateSpacing(this.value)" id="multiplierSlider" class="w-40">
                 <span id="multiplierValue" style="color: white;">10</span>
+            </div>
+            <div class="flex flex-col space-y-2">
+                <label for="CalcRad" class="text-gray-400">Calc radius</label>
+                <input type="range" value="10" min="1" max="100" step="1" oninput="this.nextElementSibling.value = this.value" id="CalcRadSlider" class="w-40">
+                <output class="text" id="CalcRadius" style="color: white;">10</output>
             </div>
             <div class="flex flex-col space-y-2">
                 <label for="robotWidthSlider" class="text-gray-400">Robot Width</label>
@@ -67,22 +81,112 @@
                 <button id="stopSimBtn" class="bg-red-300 hover:bg-red-600 text-white font-bold py-2 px-4 rounded mt-4">Stop Simulation</button>
                 <div class="flex flex-col space-y-2">
                 <label for="SimSpeed" class="text-gray-400">Simulation Speed</label>
-                <input type="range" value="10" min="1" max="20" step="1" oninput="this.nextElementSibling.value = this.value" id="SimSpeed">
+                <input type="range" value="10" min="1" max="50" step="1" oninput="this.nextElementSibling.value = this.value" id="SimSpeed">
                 <output class="text" id="SimulationSpeedOutput" style="color: white;">10</output>
                 </div>
                 <!--button id="startTestBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">Start Test</button>
                 <button id="stopTestBtn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mt-4">Stop Test</button-->
+                    <div class="flex flex-col space-y-2">
+                        <label for="pathScriptMode" class="text-gray-400">Path Script</label>
+                        <select id="pathScriptMode" class="w-32 bg-gray-300 text-black p-2 rounded-full mt-2">
+                            <option value="Method0"> 1</option>
+                            <option value="Method1"> 2</option>
+                            <option value="Method2"> 3</option>
+                        </select>
+                    </div>
             </div>
         </div>
+
+        
     </div>
+
+    <div id="popupModal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center">
+        <div class="bg-white rounded-lg shadow-lg p-6 w-1/3">
+            <h2 class="text-2xl font-bold mb-4">Adjust Settings</h2>
+            
+            <div class="mb-4">
+                <label for="calcRadiusOrientation" class="block text-gray-700 font-bold ">Calc Radius Orientation (0-100)</label>
+                <input type="range" id="calcRadiusOrientation" min="0" max="100" step="1" value = "75" class="w-full">
+                <output id="calcRadiusOrientationOutput" class="text-gray-700">75</output>
+            </div>
+    
+            <div class="mb-4">
+                <label for="speedCalcMode" class="block text-gray-700 font-bold  mt-10">Speed Calculation Mode</label>
+                <div class="flex space-x-4">
+                    <div class="flex-1 mt-8">
+                        <!--label for="speedCalcMode" class="block text-gray-700 font-bold mb-2">Mode</label-->
+                        <select id="speedCalcMode" class="w-full bg-gray-300 text-black p-2 rounded">
+                            <option value="linear">Linear</option>
+                            <option value="exponential">Exponential</option>
+                            
+                            <option value="logarithmic">Logarithmic</option>
+                            <option value="quadratic">Quadratic</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label for="speedCalcDirection" class="block text-gray-700 font-bold mb-2">Direction</label>
+                        <select id="speedCalcDirection" class="w-full bg-gray-300 text-black p-2 rounded">
+                            <option value="max">Max</option>
+                            <option value="min">Min</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label for="methodMode" class="block text-gray-700 font-bold mb-2">Speed Calculation Method</label>
+                <select id="methodMode"  value = "max" class="w-full bg-gray-300 text-black p-2 rounded">
+                    <option value="max">Max</option>
+                    <option value="mean">Mean</option>
+                    <option value="median">Median</option>
+                    
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="wheelRadius" class="block text-gray-700 font-bold mb-2">Wheel Radius (0-5)</label>
+                <input type="range" id="wheelRadius" min="0" max="5" step="0.01" value= "2.5" class="w-full">
+                <output id="wheelRadiusOutput" class="text-gray-700">2.5</output>
+            </div>
+    
+            <div class="mb-4">
+                <label for="frictionCoefficient" class="block text-gray-700 font-bold mb-2">Friction Coefficient (0-1)</label>
+                <input type="range" id="frictionCoefficient" min="0" max="0.01" value = "0.4" step="0.00001" class="w-full">
+                <output id="frictionCoefficientOutput" class="text-gray-700">0.001 </output>
+            </div>
+    
+            <div class="mb-4">
+                <label for="maxRPM" class="block text-gray-700  font-bold mb-2">Max RPM (0-1000)</label>
+                <input type="range" id="maxRPM" min="0" max="1000"  value = "600" step="1" class="w-full">
+                <output id="maxRPMOutput" class="text-gray-700">400</output>
+            </div>
+    
+            <div class="mb-4">
+                <label for="gearRatio1" class="block text-gray-700 font-bold mb-2">Gear Ratio</label>
+                <div class="flex space-x-2">
+                    <input type="number" id="gearRatio1" min="1" max="100" step="1" value="3" class="w-1/2 bg-gray-300 text-black p-2 rounded">
+                    <span class="text-gray-700">:</span>
+                    <input type="number" id="gearRatio2" min="1" max="10" step="1" value="5" class="w-1/2 bg-gray-300 text-black p-2 rounded">
+                </div>
+            </div>
+            
+            <button id="closePopupBtn" class="bg-red-300 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">Close</button>
+        </div>
+    </div>
+    
+    
 
     <script src="js/vector.js"></script>
     <script src="js/graphics.js"></script>
-    <script src="js/path.js"></script>
+    <!--script src="js/path2.js"></script-->
     <script src="js/events.js"></script>
     <script src="js/main.js"></script>
     <script src="js/settings.js"></script>
     <script src="js/simulator.js"></script>
+    
+    <script src="js/path.js"></script>
+    <script src="js/path2.js"></script>
+    
+    
+    <!--script src="js/simulator2.js"></script-->
     <script src="js/test.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', (event) => {
@@ -98,7 +202,24 @@
             document.getElementById('clearCodeBtn').onclick = function() {
                 document.getElementById('generatedCodeArea').value = '';
             };
+
+
+            document.getElementById('openPopupBtn').onclick = function() {
+                document.getElementById('popupModal').classList.remove('hidden');
+                document.getElementById('popupModal').classList.add('flex');
+            };
+    
+            // Close Popup
+            document.getElementById('closePopupBtn').onclick = function() {
+                document.getElementById('popupModal').classList.add('hidden');
+                document.getElementById('popupModal').classList.remove('flex');
+            };
         });
+        /*document.getElementById('pathScript').addEventListener('change', function(event) {
+            console.log('script changed to ', event.target.value);
+            
+        });
+  */
     </script>
 </body>
 </html>

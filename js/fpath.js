@@ -39,9 +39,8 @@ class Path {
     this.frictionCoefficient = 0.4; // Friction coefficient
     this.maxVoltage = 12; // volts
     this.maxRPM = 600; // RPM
-    this.gearRatio = 3/5; // gear ratio
+    this.gearRatio = 1; // gear ratio
     this.wheelRadius = 1.625; // inches (3.25 / 2)
-    this.CalcRadiusOrientation = 75;
 
     this.update();
   }
@@ -57,6 +56,22 @@ class Path {
 
   setSpeedMode(mode) {
       this.speedMode = mode;
+  }
+  pathscript(){
+    let path = document.getElementById('pathScriptMode').value;
+
+    if (path === 'Method0') {
+        console.log("using method0 path equals", path );
+        return 1;
+    }
+    else if(path === 'Method1'){
+        console.log("using method1 path equals", path );
+        return 2;
+    }
+    else if(path === 'Method2'){
+        console.log("using method2 path equals", path );
+        return 3;
+    }
   }
 
   addPoint(point) {
@@ -95,26 +110,6 @@ class Path {
     }
   }
 
-
-
-  pathscript(){
-    let path = document.getElementById('pathScriptMode').value;
-
-    if (path === 'Method0') {
-        console.log("using method0 path equals", path );
-        return 1;
-    }
-    else if(path === 'Method1'){
-        console.log("using method1 path equals", path );
-        return 2;
-    }
-
-    else if(path === 'Method2'){
-        console.log("using method2 path equals", path );
-        return 3;
-    }
-    
-  }
   calcVisuals() {
     this.circles.forEach(circle => circle.remove());
     this.circles = [];
@@ -158,59 +153,7 @@ class Path {
     const gravity = 9.81; 
     return Math.sqrt((frictionCoefficient * gravity) / curvatureRadius);
 }
-generateAutonomousPath2() {
-  this.updateMaxRPM();
-  this.updateGearRatio1();
-  this.updateGearRatio2();
-  this.updateWheelRadius();
-  this.updateFrictionCoefficient();
-  this.updateCalcRadiusOrientation();
-  this.updateSpeedCalcMode();
-
-  let movements = [];
-  let firstPoint = this.points[0];
-  let secondPoint = this.points[1];
-  let initialTheta = this.calculateTheta(firstPoint, secondPoint);
-  movements.push(`odom->set_pose({${firstPoint.x.toFixed(1)}, ${firstPoint.y.toFixed(1)}, ${initialTheta.toFixed(1)}});`);
-
-  for (let i = 1; i < this.points.length; i++) {
-    let point = this.points[i];
-    let theta = 0;
-    if (i < this.points.length - 1) {
-      let nextPoint = this.points[i + 1];
-      theta = this.calculateTheta(point, nextPoint);
-    } else if (i === this.points.length - 1) {
-      let prevPoint = this.points[i - 1];
-      theta = prevPoint.theta;
-    }
-    point.theta = theta;
-
-    let flag;
-    if (i === this.points.length - 1) {
-      flag = point.reverse ? 'gfr::Flags::REVERSE' : 'gfr::Flags::NONE';
-    } else {
-      flag = point.reverse ? 'gfr::Flags::THRU | gfr::Flags::REVERSE' : 'gfr::Flags::THRU';
-    }
-
-    const speed = this.calculateSpeed(i);
-
-    movements.push(`chassis.move({${point.x.toFixed(1)}, ${point.y.toFixed(1)}, ${theta.toFixed(1)}}, boomerang, ${speed.toFixed(1)}, ${flag});`);
-  }
-
-  const generatedCode = movements.join('\n');
-  console.log(generatedCode);
-
-  document.getElementById('generatedCodeArea').value = generatedCode;
-}
 generateAutonomousPath() {
-  this.updateMaxRPM();
-  this.updateGearRatio1();
-  this.updateGearRatio2();
-  this.updateWheelRadius();
-  this.updateFrictionCoefficient();
-  this.updateCalcRadiusOrientation();
-  this.updateSpeedCalcMode();
-
   let movements = [];
   let firstPoint = this.points[0];
   let secondPoint = this.points[1];
@@ -251,73 +194,16 @@ generateAutonomousPath() {
           const maxSpeedVoltage = (maxSpeedMPS / this.calculateWheelSpeed(1)) * this.maxVoltage;
           console.log(`curvatureRadius: ${curvatureRadius}, limitingAngularVelocity: ${limitingAngularVelocity}, maxSpeedMPS: ${maxSpeedMPS}, maxSpeedVoltage: ${maxSpeedVoltage}`);
           speed = Math.min(maxSpeedVoltage, this.maxVoltage) / this.maxVoltage * Number(document.getElementById('maxSpeedSlider').value);
-          if(this.speedMode === 'constant'){
+          if(this.speedMode === 'Constant'){
               console.log("calculating speed in constant mode speed is", speed)
               speed = Number(document.getElementById('maxSpeedSlider').value);
           }
           if (this.speedMode === 'Calculated') {
               console.log("calculating speed in calculated mode speed is", speed)
           }
-          
       }
 
       movements.push(`chassis.move({${point.x.toFixed(1)}, ${point.y.toFixed(1)}, ${theta.toFixed(1)}}, boomerang, ${speed.toFixed(1)}, ${flag});`);
-      console.log("frinction coefficient is", this.frictionCoefficient)
-  }
-
-
-  
-
-  const generatedCode = movements.join('\n');
-  console.log(generatedCode);
-
-  document.getElementById('generatedCodeArea').value = generatedCode;
-}
-
-generateAutonomousPath3() {
-  this.updateMaxRPM();
-  this.updateGearRatio1();
-  this.updateGearRatio2();
-  this.updateWheelRadius();
-  this.updateFrictionCoefficient();
-  this.updateCalcRadiusOrientation();
-  this.updateSpeedCalcMode();
-
-  let movements = [];
-  let firstPoint = this.points[0];
-  let secondPoint = this.points[1];
-  let initialTheta = this.calculateTheta(firstPoint, secondPoint);
-  movements.push(`odom->set_pose({${firstPoint.x.toFixed(1)}, ${firstPoint.y.toFixed(1)}, ${initialTheta.toFixed(1)}});`);
-
-  // First loop: calculate all theta values
-  for (let i = 1; i < this.points.length; i++) {
-    let point = this.points[i];
-    let theta = 0;
-    if (i < this.points.length - 1) {
-      let nextPoint = this.points[i + 1];
-      theta = this.calculateTheta(point, nextPoint);
-    } else if (i === this.points.length - 1) {
-      let prevPoint = this.points[i - 1];
-      theta = prevPoint.theta;
-    }
-    point.theta = theta;
-  }
-
-  // Second loop: generate movements
-  for (let i = 1; i < this.points.length; i++) {
-    let point = this.points[i];
-    let theta = point.theta;
-
-    let flag;
-    if (i === this.points.length - 1) {
-      flag = point.reverse ? 'gfr::Flags::REVERSE' : 'gfr::Flags::NONE';
-    } else {
-      flag = point.reverse ? 'gfr::Flags::THRU | gfr::Flags::REVERSE' : 'gfr::Flags::THRU';
-    }
-
-    const speed = this.calculateSpeedBasedOnThetaChange(i);
-
-    movements.push(`chassis.move({${point.x.toFixed(1)}, ${point.y.toFixed(1)}, ${theta.toFixed(1)}}, boomerang, ${speed.toFixed(1)}, ${flag});`);
   }
 
   const generatedCode = movements.join('\n');
@@ -328,124 +214,42 @@ generateAutonomousPath3() {
 
 
 
+  generateAutonomousPath3() {
+    let movements = [];
+    let firstPoint = this.points[0];
+    let secondPoint = this.points[1];
+    let initialTheta = this.calculateTheta(firstPoint, secondPoint);
+    movements.push(`odom->set_pose({${firstPoint.x.toFixed(1)}, ${firstPoint.y.toFixed(1)}, ${initialTheta.toFixed(1)}});`);
 
-calculateSpeedBasedOnThetaChange(index) {
-    const calcRadiusOrientation = Number(document.getElementById('calcRadiusOrientation').value) / 100;
-    const maxSpeed = Number(document.getElementById('maxSpeedSlider').value);
-    const minSpeed = Number(document.getElementById('minSpeedSlider').value);
-    const numPoints = Math.floor(Number(document.getElementById('CalcRadSlider').value) / Number(document.getElementById('multiplierSlider').value));
-    const mode = document.getElementById('speedCalcMode').value;
-    const direction = document.getElementById('speedCalcDirection').value;
-    const method = document.getElementById('methodMode').value;
+    for (let i = 1; i < this.points.length; i++) {
+      let point = this.points[i];
+      let theta = 0;
+      if (i < this.points.length - 1) {
+        let nextPoint = this.points[i + 1];
+        theta = this.calculateTheta(point, nextPoint);
+      } else if (i === this.points.length - 1) {
+        let prevPoint = this.points[i - 1];
+        theta = prevPoint.theta;
+      }
+      point.theta = theta;
 
-    console.log('index', index);
+      let flag;
+      if (i === this.points.length - 1) {
+        flag = point.reverse ? 'gfr::Flags::REVERSE' : 'gfr::Flags::NONE';
+      } else {
+        flag = point.reverse ? 'gfr::Flags::THRU | gfr::Flags::REVERSE' : 'gfr::Flags::THRU';
+      }
 
-    if (index === 1 || index === this.points.length - 1) {
-        return maxSpeed;
+      const speed = this.calculateSpeed2(i);
+
+      movements.push(`chassis.move({${point.x.toFixed(1)}, ${point.y.toFixed(1)}, ${theta.toFixed(1)}}, boomerang, ${speed.toFixed(1)}, ${flag});`);
     }
 
-    const numFrontPoints = Math.floor(numPoints * calcRadiusOrientation);
-    const numBackPoints = numPoints - numFrontPoints;
+    const generatedCode = movements.join('\n');
+    console.log(generatedCode);
 
-    let thetaChanges = [];
-
-    for (let i = 1; i <= numFrontPoints; i++) {
-        if (index + i < this.points.length) {
-            let nextTheta = this.points[index + i].theta;
-            let currTheta = this.points[index].theta;
-            let deltaTheta = Math.abs(nextTheta - currTheta);
-            thetaChanges.push(deltaTheta);
-        }
-    }
-
-    for (let i = 1; i <= numBackPoints; i++) {
-        if (index - i > 0) {
-            let prevTheta = this.points[index - i].theta;
-            let currTheta = this.points[index].theta;
-            let deltaTheta = Math.abs(prevTheta - currTheta);
-            thetaChanges.push(deltaTheta);
-        }
-    }
-
-    let deltaTheta;
-    if (method === 'median') {
-        thetaChanges.sort((a, b) => a - b);
-        const mid = Math.floor(thetaChanges.length / 2);
-        deltaTheta = thetaChanges.length % 2 !== 0 ? thetaChanges[mid] : (thetaChanges[mid - 1] + thetaChanges[mid]) / 2;
-    } else if (method === 'mean') {
-        deltaTheta = thetaChanges.reduce((acc, val) => acc + val, 0) / thetaChanges.length;
-    } else { // max
-        deltaTheta = Math.max(...thetaChanges);
-    }
-
-    console.log(`Calculated deltaTheta: ${deltaTheta}`);
-
-    let speed;
-    if (mode === 'exponential') {
-        if (direction === 'max') {
-            speed = maxSpeed - Math.exp(deltaTheta / 180) * (maxSpeed - minSpeed);
-        } else {
-            speed = minSpeed + Math.exp(deltaTheta / 180) * (maxSpeed - minSpeed);
-        }
-    } else if (mode === 'quadratic') {
-        if (direction === 'max') {
-            speed = maxSpeed - Math.pow(deltaTheta / 180, 2) * (maxSpeed - minSpeed);
-        } else {
-            speed = minSpeed + Math.pow(deltaTheta / 180, 2) * (maxSpeed - minSpeed);
-        }
-    } else if (mode === 'linear' || mode === 'logarithmic') {
-        if (direction === 'max') {
-            speed = maxSpeed - (deltaTheta / 180) * (maxSpeed - minSpeed);
-        } else {
-            speed = minSpeed + (deltaTheta / 180) * (maxSpeed - minSpeed);
-        }
-    }
-
-    return Math.max(minSpeed, Math.min(speed, maxSpeed));
-}
-
-
-updateMaxRPM() {
-  this.maxRPM = Number(document.getElementById('maxRPM').value);
-  document.getElementById('maxRPMOutput').value = path.maxRPM;
-  console.log(`Updated maxRPM: ${path.maxRPM}`);
-}
-
-
-updateGearRatio1() {
-  const gearRatio1 = Number(document.getElementById('gearRatio1').value);
-  const gearRatio2 = Number(document.getElementById('gearRatio2').value);
-  this.gearRatio = gearRatio1 / gearRatio2;
-  console.log(`Updated gearRatio: ${path.gearRatio}`);
-}
-
-updateGearRatio2() {
-  const gearRatio1 = Number(document.getElementById('gearRatio1').value);
-  const gearRatio2 = Number(document.getElementById('gearRatio2').value);
-  this.gearRatio = gearRatio1 / gearRatio2;
-  console.log(`Updated gearRatio: ${path.gearRatio}`);
-}
-
-
-
-updateWheelRadius() {
-  this.wheelRadius = Number(document.getElementById('wheelRadius').value);
-  document.getElementById('wheelRadiusOutput').value = path.wheelRadius;
-  console.log(`Updated wheelRadius: ${path.wheelRadius}`);
-}
-
-updateFrictionCoefficient() {
-  this.frictionCoefficient = Number(document.getElementById('frictionCoefficient').value);
-  
-  console.log(`Updated frictionCoefficient: ${path.frictionCoefficient}`);
-}
-
-
-updateCalcRadiusOrientation() {
-  this.CalcRadiusOrientation = Number(document.getElementById('calcRadiusOrientation').value);
-
-  console.log(`Updated calcRadiusOrientation: ${document.getElementById('calcRadiusOrientation').value}`);
-}
+    document.getElementById('generatedCodeArea').value = generatedCode;
+  }
 
   calculateTheta(point1, point2) {
     console.log(`calculating theta between ${point1.x}, ${point1.y} and ${point2.x}, ${point2.y}`);
@@ -455,17 +259,6 @@ updateCalcRadiusOrientation() {
     console.log(`deltaX: ${deltaX}, deltaY: ${deltaY}`);
     console.log(`theta: ${theta}`);
     return theta;
-  }
-
-  updateSpeedCalcMode() {
-    const speedCalcMode = document.getElementById('speedCalcMode').value;
-    path.setSpeedMode(speedCalcMode);
-    console.log(`Updated speedCalcMode: ${speedCalcMode}`);
-}
-
-  generatePath1() {
-    this.update();
-    this.generateAutonomousPath();
   }
 
 
@@ -482,17 +275,13 @@ updateCalcRadiusOrientation() {
         this.generateAutonomousPath2();
         console.log("generated using pathscript 2");
     }
-
     else if (this.pathscript() === 3) {
         console.log("generating using pathscript 3");
         this.generateAutonomousPath3();
         console.log("generated using pathscript 3");
-    
     }
-
   }
 
-  
   update() {
     clearHighlight();
     this.points = [];
@@ -601,18 +390,46 @@ updateCalcRadiusOrientation() {
   }
 
 
- 
+  calculateSpeed2(index) {
+    const radius = 15; // 15-inch radius
+    const maxSpeed = Number(document.getElementById('maxSpeedSlider').value);
+    const minSpeed = maxSpeed / 2;
+
+    let pointsInRange = this.findPointsInRange2(index, radius);
+    let secondDerivative = this.calculateSecondDerivative(pointsInRange);
+
+    let curvatureFactor = Math.min(Math.max(secondDerivative, 0), 1);
+    let speed = maxSpeed - (curvatureFactor * (maxSpeed - minSpeed));
+    return speed;
+  }
+
+  findPointsInRange2(centerIndex, radius) {
+    let pointsInRange = [];
+    const centerPoint = this.points[centerIndex];
+
+    for (let i = 0; i < this.points.length; i++) {
+      let point = this.points[i];
+      let distance = Vector.distance(centerPoint, point);
+      if (distance <= radius || (i >= centerIndex - 7 && i <= centerIndex + 20)) {
+        pointsInRange.push(point);
+      }
+    }
+
+    return pointsInRange;
+  }
+
+
 
   calculateSpeed(index) {
-    const radius = 40; 
+    const radius = 15; // 15-inch radius
     const maxSpeed = Number(document.getElementById('maxSpeedSlider').value);
-    let minSpeed =  Number(document.getElementById('minSpeedSlider').value);
+    const minSpeed = maxSpeed / 2;
 
     let pointsInRange = this.findPointsInRange(this.points[index], radius);
     let secondDerivative = this.calculateSecondDerivative(pointsInRange);
 
     let curvatureFactor = Math.min(Math.max(secondDerivative, 0), 1);
-    let speed = Math.min(maxSpeed - (curvatureFactor  /*(maxSpeed - minSpeed))*/), minSpeed);
+    let speed = maxSpeed - (curvatureFactor * (maxSpeed - minSpeed));
     return speed;
   }
 
@@ -622,45 +439,41 @@ updateCalcRadiusOrientation() {
       return distance <= radius;
     });
   }
-  mean(numbers) {
-    if (!Array.isArray(numbers)) {
-      console.error('mean() expects an array, got:', numbers);
-      return NaN;
-    }
-    if (numbers.length === 0) {
-      return 0;
-    }
-    const sum = numbers.reduce((acc, num) => acc + num, 0);
-    return sum / numbers.length;
-  }
-  
 
-  calculateSecondDerivative(points) {
-    if (points.length < 3) return 0;
-  
-    let firstDerivatives = [];
-    for (let i = 0; i < points.length - 1; i++) {
-      let dx = points[i + 1].x - points[i].x;
-      let dy = points[i + 1].y - points[i].y;
-      let length = Math.sqrt(dx * dx + dy * dy);
-      let derivative = dy / dx; 
-      firstDerivatives.push({ derivative, length });
-    }
-  
-    let secondDerivatives = [];
-    for (let i = 0; i < firstDerivatives.length - 1; i++) {
-      let dDerivative = firstDerivatives[i + 1].derivative - firstDerivatives[i].derivative;
-      let avgLength = this.mean([firstDerivatives[i + 1].length, firstDerivatives[i].length]);
-      if (isNaN(avgLength)) {
-        console.error('Invalid avgLength calculated:', avgLength, firstDerivatives);
-        continue;
+  findPointsInRange2(centerIndex, radius) {
+    let pointsInRange = [];
+    const centerPoint = this.points[centerIndex];
+
+    for (let i = 0; i < this.points.length; i++) {
+      let point = this.points[i];
+      let distance = Vector.distance(centerPoint, point);
+      if (distance <= radius || (i >= centerIndex - 7 && i <= centerIndex + 20)) {
+        pointsInRange.push(point);
       }
-      secondDerivatives.push(Math.abs(dDerivative) / avgLength); // Normalize by distance to get rate of change
     }
-  
-    return this.mean(secondDerivatives); 
   }
   
+  calculateSpeed(index) {
+    const radius = 15; // 15-inch radius
+    const maxSpeed = Number(document.getElementById('maxSpeedSlider').value);
+    const minSpeed = maxSpeed / 2;
+
+    let pointsInRange = this.findPointsInRange(this.points[index], radius);
+    let secondDerivative = this.calculateSecondDerivative(pointsInRange);
+
+    let curvatureFactor = Math.min(Math.max(secondDerivative, 0), 1);
+    let speed = maxSpeed - (curvatureFactor * (maxSpeed - minSpeed));
+    return speed;
+  }
+
+  findPointsInRange(centerPoint, radius) {
+    return this.points.filter(point => {
+      let distance = Vector.distance(centerPoint, point);
+      return distance <= radius;
+    });
+  }
+
+
 
   calculateCurvatureRadius(p1, p2, p3) {
     // Calculate the distances between the points
@@ -686,13 +499,33 @@ updateCalcRadiusOrientation() {
     const radius = (a * b * c) / (4 * area);
 
     // Ensure the radius is not more than the area
-    
+    const finalRadius = Math.min(radius, area);
+    console.log('Radius:', finalRadius);
 
-    return radius;
+    return finalRadius;
 }
 
-}
+calculateSecondDerivative(points) {
+    if (points.length < 3) return 0;
 
+    let firstDerivatives = [];
+    for (let i = 0; i < points.length - 1; i++) {
+      let dx = points[i + 1].x - points[i].x;
+      let dy = points[i + 1].y - points[i].y;
+      firstDerivatives.push({ dx, dy });
+    }
+
+    let secondDerivatives = [];
+    for (let i = 0; i < firstDerivatives.length - 1; i++) {
+      let ddx = firstDerivatives[i + 1].dx - firstDerivatives[i].dx;
+      let ddy = firstDerivatives[i + 1].dy - firstDerivatives[i].dy;
+      secondDerivatives.push(Math.sqrt(ddx * ddx + ddy * ddy));
+    }
+
+    return Math.max(...secondDerivatives);
+  }
+
+}
 
 function clearCanvas(reverseMode) {
   Line.instances = [];
@@ -711,4 +544,3 @@ document.getElementById('speedMode').addEventListener('change', function(event) 
     console.log('Speed mode changed to:', event.target.value);
     path.setSpeedMode(event.target.value);
 });
-
