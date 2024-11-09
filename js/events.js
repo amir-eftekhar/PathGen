@@ -2,19 +2,31 @@
 
 const canvasQuery = document.querySelector('canvas');
 const highlightRect = new Rectangle(new Vector(0, 0), new Vector(0, 0), 'rgba(51, 51, 51, 0.705)');
+let movement_type = 'regular';
 
 function getCursorPosition(event) {
   const rect = canvasQuery.getBoundingClientRect();
   const mousePoint = pxToCoord(new Vector(event.clientX - rect.left, event.clientY - rect.top));
   return mousePoint;
 }
+
+function changeMovementMode() {
+  movement_type = document.getElementById('movementType').value;
+  console.log('movement_type is', movement_type);
+}
+
 let mode = 0;
+
+let angleInputs = []; // Store references to angle input elements
+
 function leftClick(event) {
   if (typeof mode === 'undefined') {
     mode = 0;
   }
 
-  if (mode === 0) { 
+  if (mode === 0) {
+    changeMovementMode();
+    console.log('movement_type = ', movement_type);
     clearHighlight();
     const mouse = getCursorPosition(event);
     let foundPoint = false;
@@ -30,8 +42,6 @@ function leftClick(event) {
       } else if (Vector.distance(mouse, p1) < 5) {
         path.splines[i].p1.data = 1;
         foundPoint = true;
-
-        
         break;
       } else if (Vector.distance(mouse, p2) < 5) {
         path.splines[i].p2.data = 1;
@@ -45,18 +55,34 @@ function leftClick(event) {
     }
 
     if (!foundPoint) {
-      path.addPoint(getCursorPosition(event));
+      const pointDistance = Number(document.getElementById('multiplierSlider').value);
+      if (movement_type === 'regular') {
+        path.addPoint(getCursorPosition(event), 'regular', 0, pointDistance);
+      } else if (movement_type === 'point') {
+        path.clearPoints();
+        path.addPoint(getCursorPosition(event), 'point', 0, pointDistance);
+      } else if (movement_type === 'PID') {
+        path.addPoint(getCursorPosition(event), 'PID', 0, pointDistance);
+      } else if (movement_type === 'turn') {
+        const position = getCursorPosition(event);
+        const angleInput = createAngleInputBox(position);
+        document.body.appendChild(angleInput);
+        angleInputs.push(angleInput); 
+      }
     }
   }
 }
 
+
+
+// Clear canvas function to remove any remaining input boxes
 
 function rightClick(event) {
   if (typeof mode === 'undefined') {
     mode = 0;
   }
 
-  if (mode === 0) { 
+  if (mode === 0) {
     clearHighlight();
     const mouse = getCursorPosition(event);
     const start = path.splines[0].p0;
@@ -66,7 +92,6 @@ function rightClick(event) {
     } else if (Vector.distance(mouse, end) < 5) {
       path.removePoint(1);
     }
-    // Update path after removing points
     path.update();
   }
 }
@@ -90,6 +115,7 @@ function leftDrag(event, start) {
           path.splines[i - 1].p2.y += dy;
           path.splines[i - 1].p3 = new Vector(mouse.x, mouse.y, 0);
         }
+        path.movementTypes[i] = path.movementTypes[i] || 'regular'; // Preserve movement type
         path.update();
         break;
       } else if (path.splines[i].p1.data === 1) {
@@ -158,7 +184,7 @@ function leftRelease(event) {
     mode = 0;
   }
 
-  if (mode === 0) { 
+  if (mode === 0) {
     for (let i = 0; i < path.splines.length; i++) {
       path.splines[i].p0.data = 0;
       path.splines[i].p1.data = 0;
@@ -207,11 +233,6 @@ document.onkeydown = function(event) {
     }
   }
 };
-/*
-decelerationSlider.onchange = function() {
-  path.update();
-};
-*/
 
 maxSpeedSlider.onchange = function() {
   path.update();
@@ -259,7 +280,6 @@ canvasQuery.onmousemove = function(event) {
   mouseMove(event);
 };
 
-// Function to clear highlights
 function clearHighlight() {
   highlightList = [];
   highlightCircles = [];

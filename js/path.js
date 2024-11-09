@@ -42,6 +42,10 @@ class Path {
     this.gearRatio = 3/5; // gear ratio
     this.wheelRadius = 1.625; // inches (3.25 / 2)
     this.CalcRadiusOrientation = 75;
+    this.movementTypes = []; 
+    this.pointDistances = []; 
+    this.allFutureSwitch = false; 
+    
 
     this.update();
   }
@@ -69,11 +73,20 @@ class Path {
     this.splines.push(new Spline(p0, p1, p2, p3));
     this.tempPoints.push(p3); // Add point to the temporary list
     this.newPoints.push(p3); // Add point to the new points list
+    this.movementTypes.push(movementType);
+    this.pointDistances.push(this.getPointDistance());
+    if (movementType === 'turn') {
+      point.turnAngle = angle;
+    }
     console.log('Added point:', p3);
     console.log('Current splines:', this.splines);
     console.log('Current tempPoints:', this.tempPoints);
     console.log('Current newPoints:', this.newPoints);
     this.update();
+  }
+
+  getPointDistance() {
+    return Number(document.getElementById('multiplierSlider').value);
   }
 
   removePoint(pos){
@@ -95,6 +108,11 @@ class Path {
     }
   }
 
+
+  clearPoints() {
+    this.points = [];
+    this.splines = [new Spline(new Vector(0, 0), new Vector(0, 0), new Vector(0, 0), new Vector(0, 0))];
+  }
 
 
   pathscript(){
@@ -126,7 +144,7 @@ class Path {
     this.lines.forEach(line => line.remove());
     this.lines = [];
     for (let i = 0; i < this.circles.length - 1; i++) {
-      this.lines.push(new Line(this.circles[i].center, this.circles[i + 1].center, lineWidth, this.points[i + 1].reverse ? 'yellow' : 'blue'));
+      this.lines.push(new Line(this.circles[i].center, this.circles[i + 1].center, lineWidth, this.points[i + 1].reverse ? 'yellow' : getLineColor()));
     }
 
     this.controlCircles.forEach(circle => circle.remove());
@@ -158,50 +176,7 @@ class Path {
     const gravity = 9.81; 
     return Math.sqrt((frictionCoefficient * gravity) / curvatureRadius);
 }
-generateAutonomousPath2() {
-  this.updateMaxRPM();
-  this.updateGearRatio1();
-  this.updateGearRatio2();
-  this.updateWheelRadius();
-  this.updateFrictionCoefficient();
-  this.updateCalcRadiusOrientation();
-  this.updateSpeedCalcMode();
 
-  let movements = [];
-  let firstPoint = this.points[0];
-  let secondPoint = this.points[1];
-  let initialTheta = this.calculateTheta(firstPoint, secondPoint);
-  movements.push(`odom->set_pose({${firstPoint.x.toFixed(1)}, ${firstPoint.y.toFixed(1)}, ${initialTheta.toFixed(1)}});`);
-
-  for (let i = 1; i < this.points.length; i++) {
-    let point = this.points[i];
-    let theta = 0;
-    if (i < this.points.length - 1) {
-      let nextPoint = this.points[i + 1];
-      theta = this.calculateTheta(point, nextPoint);
-    } else if (i === this.points.length - 1) {
-      let prevPoint = this.points[i - 1];
-      theta = prevPoint.theta;
-    }
-    point.theta = theta;
-
-    let flag;
-    if (i === this.points.length - 1) {
-      flag = point.reverse ? 'gfr::Flags::REVERSE' : 'gfr::Flags::NONE';
-    } else {
-      flag = point.reverse ? 'gfr::Flags::THRU | gfr::Flags::REVERSE' : 'gfr::Flags::THRU';
-    }
-
-    const speed = this.calculateSpeed(i);
-
-    movements.push(`chassis.move({${point.x.toFixed(1)}, ${point.y.toFixed(1)}, ${theta.toFixed(1)}}, boomerang, ${speed.toFixed(1)}, ${flag});`);
-  }
-
-  const generatedCode = movements.join('\n');
-  console.log(generatedCode);
-
-  document.getElementById('generatedCodeArea').value = generatedCode;
-}
 generateAutonomousPath() {
   this.updateMaxRPM();
   this.updateGearRatio1();
@@ -216,57 +191,87 @@ generateAutonomousPath() {
   let secondPoint = this.points[1];
   let initialTheta = this.calculateTheta(firstPoint, secondPoint);
   let frictionCoefficient = this.frictionCoefficient;
-  movements.push(`odom->set_pose({${firstPoint.x.toFixed(1)}, ${firstPoint.y.toFixed(1)}, ${initialTheta.toFixed(1)}});`);
+  //movements.push(`odom->set_pose({${firstPoint.x.toFixed(1)}, ${firstPoint.y.toFixed(1)}, ${initialTheta.toFixed(1)}});`);
+  movements.push(`chassis.setPose({${firstPoint.x.toFixed(1)}, ${firstPoint.y.toFixed(1)}, ${initialTheta.toFixed(1)}});`);
+  
+  
 
   for (let i = 1; i < this.points.length; i++) {
-      let point = this.points[i];
-      let theta = 0;
-      if (i < this.points.length - 1) { 
-          let nextPoint = this.points[i + 1];
-          theta = this.calculateTheta(point, nextPoint);
-      } else if (i === this.points.length - 1) {
-          let prevPoint = this.points[i - 1];
-          theta = prevPoint.theta;
-      }
-      point.theta = theta; 
+    let point = this.points[i];
+    let movementType = this.movementTypes[i];
+    let theta = 0;
+    
+    if (i < this.points.length - 1) { 
+      let nextPoint = this.points[i + 1];
+      theta = this.calculateTheta(point, nextPoint);
+    } else if (i === this.points.length - 1) {
+      let prevPoint = this.points[i - 1];
+      theta = prevPoint.theta;
+    }
+    point.theta = theta; 
 
-      let flag;
-      if (i === this.points.length - 1) {
-          flag = point.reverse ? 'gfr::Flags::REVERSE' : 'gfr::Flags::NONE';
-      } else {
-          flag = point.reverse ? 'gfr::Flags::THRU | gfr::Flags::REVERSE' : 'gfr::Flags::THRU';
-      }
-      
-      const prevPoint = this.points[i - 1];
-      const nextPoint = i < this.points.length - 1 ? this.points[i + 1] : point;
-      const curvatureRadius = this.calculateCurvatureRadius(prevPoint, point, nextPoint);
-      let speed;
+    let speed;
+    let command;
 
-      if (curvatureRadius === Infinity) {
+    switch (movementType) {
+      case 'turn':
+        command = `chassis.turn(${Math.round(point.turnAngle)});`;
+        movements.push(command);
+        continue; // Skip to next iteration, as we don't need to calculate speed for turns
+
+      case 'point':
+        speed = Number(document.getElementById('maxSpeedSlider').value);
+        command = `chassis.move({${point.x.toFixed(1)}, ${point.y.toFixed(1)}, ${theta.toFixed(1)}}, boomerang, ${speed.toFixed(1)}, gfr::Flags::NONE});`;
+        break;
+
+      case 'PID':
+        speed = this.calculateSpeedBasedOnThetaChange(i);
+        command = `chassis.move({${point.x.toFixed(1)}, ${point.y.toFixed(1)}, ${theta.toFixed(1)}}, PID, ${speed.toFixed(1)});`;
+        break;
+
+      default: // 'regular'
+        const prevPoint = this.points[i - 1];
+        const nextPoint = i < this.points.length - 1 ? this.points[i + 1] : point;
+        const curvatureRadius = this.calculateCurvatureRadius(prevPoint, point, nextPoint);
+        
+        if (curvatureRadius === Infinity) {
           console.log('Curvature radius is infinite due to collinear points, using max speed');
           speed = Number(document.getElementById('maxSpeedSlider').value);
-      } else {
+        } else {
           const limitingAngularVelocity = this.calculateLimitingAngularVelocity(frictionCoefficient, curvatureRadius);
           const maxSpeedMPS = limitingAngularVelocity * curvatureRadius;
           const maxSpeedVoltage = (maxSpeedMPS / this.calculateWheelSpeed(1)) * this.maxVoltage;
           console.log(`curvatureRadius: ${curvatureRadius}, limitingAngularVelocity: ${limitingAngularVelocity}, maxSpeedMPS: ${maxSpeedMPS}, maxSpeedVoltage: ${maxSpeedVoltage}`);
           speed = Math.min(maxSpeedVoltage, this.maxVoltage) / this.maxVoltage * Number(document.getElementById('maxSpeedSlider').value);
-          if(this.speedMode === 'constant'){
-              console.log("calculating speed in constant mode speed is", speed)
-              speed = Number(document.getElementById('maxSpeedSlider').value);
+          if (this.speedMode === 'constant') {
+            console.log("calculating speed in constant mode speed is", speed);
+            speed = Number(document.getElementById('maxSpeedSlider').value);
           }
           if (this.speedMode === 'Calculated') {
-              console.log("calculating speed in calculated mode speed is", speed)
+            console.log("calculating speed in calculated mode speed is", speed);
           }
-          
-      }
+        }
 
-      movements.push(`chassis.move({${point.x.toFixed(1)}, ${point.y.toFixed(1)}, ${theta.toFixed(1)}}, boomerang, ${speed.toFixed(1)}, ${flag});`);
-      console.log("frinction coefficient is", this.frictionCoefficient)
+        //let flag = point.reverse ? 'gfr::Flags::REVERSE' : 'gfr::Flags::NONE';
+        
+        let flag = point.reverse ? 'false' : 'true';
+        //command = `chassis.move({${point.x.toFixed(1)}, ${point.y.toFixed(1)}, ${theta.toFixed(1)}}, boomerang, ${speed.toFixed(1)}, ${flag});`;
+        command = `chassis.moveToPoint(${Math.round(point.x)}, ${Math.round(point.y)}, 3000, {.forwards = ${flag}, .maxSpeed = ${Math.round(speed)}});`;
+    }
+    let command2= `b = lemlib::Pose(${Math.round(point.x)}, ${Math.round(point.y)});`;
+    let command3= `dist = fabs(chassis.getPose().distance(b));`;
+    let command4= `chassis.waitUntil(dist - 3);`;
+    let command5= `chassis.cancelMotion();`;
+
+
+
+    movements.push(command);
+    movements.push(command2);
+    movements.push(command3);
+    movements.push(command4);
+    movements.push(command5);
+    console.log("friction coefficient is", this.frictionCoefficient);
   }
-
-
-  
 
   const generatedCode = movements.join('\n');
   console.log(generatedCode);
@@ -306,18 +311,34 @@ generateAutonomousPath3() {
   // Second loop: generate movements
   for (let i = 1; i < this.points.length; i++) {
     let point = this.points[i];
+    let movementType = this.movementTypes[i];
     let theta = point.theta;
 
-    let flag;
-    if (i === this.points.length - 1) {
-      flag = point.reverse ? 'gfr::Flags::REVERSE' : 'gfr::Flags::NONE';
-    } else {
-      flag = point.reverse ? 'gfr::Flags::THRU | gfr::Flags::REVERSE' : 'gfr::Flags::THRU';
+    let command;
+    switch (movementType) {
+      case 'turn':
+        command = `chassis.turn(${point.turnAngle});`;
+        break;
+      case 'point':
+        let pointSpeed = Number(document.getElementById('maxSpeedSlider').value);
+        command = `chassis.move({${point.x.toFixed(1)}, ${point.y.toFixed(1)}, ${theta.toFixed(1)}}, boomerang, ${pointSpeed.toFixed(1)}, gfr::Flags::NONE);`;
+        break;
+      case 'PID':
+        let pidSpeed = this.calculateSpeedBasedOnThetaChange(i);
+        command = `chassis.move({${point.x.toFixed(1)}, ${point.y.toFixed(1)}, ${theta.toFixed(1)}}, PID, ${pidSpeed.toFixed(1)});`;
+        break;
+      default: // 'regular'
+        let flag;
+        if (i === this.points.length - 1) {
+          flag = point.reverse ? 'gfr::Flags::REVERSE' : 'gfr::Flags::NONE';
+        } else {
+          flag = point.reverse ? 'gfr::Flags::THRU | gfr::Flags::REVERSE' : 'gfr::Flags::THRU';
+        }
+        let speed = this.calculateSpeedBasedOnThetaChange(i);
+        command = `chassis.move({${point.x.toFixed(1)}, ${point.y.toFixed(1)}, ${theta.toFixed(1)}}, boomerang, ${speed.toFixed(1)}, ${flag});`;
     }
 
-    const speed = this.calculateSpeedBasedOnThetaChange(i);
-
-    movements.push(`chassis.move({${point.x.toFixed(1)}, ${point.y.toFixed(1)}, ${theta.toFixed(1)}}, boomerang, ${speed.toFixed(1)}, ${flag});`);
+    movements.push(command);
   }
 
   const generatedCode = movements.join('\n');
@@ -326,8 +347,20 @@ generateAutonomousPath3() {
   document.getElementById('generatedCodeArea').value = generatedCode;
 }
 
-
-
+updatePointDistances(newDistance, isPreviousPoints) {
+  if (isPreviousPoints) {
+    // Update all previous points
+    for (let i = 0; i < this.points.length; i++) {
+      this.pointDistances[i] = newDistance;
+    }
+  } else {
+    // Update only future points
+    for (let i = this.points.length - 1; i < this.pointDistances.length; i++) {
+      this.pointDistances[i] = newDistance;
+    }
+  }
+  this.update();
+}
 
 calculateSpeedBasedOnThetaChange(index) {
     const calcRadiusOrientation = Number(document.getElementById('calcRadiusOrientation').value) / 100;
@@ -463,10 +496,6 @@ updateCalcRadiusOrientation() {
     console.log(`Updated speedCalcMode: ${speedCalcMode}`);
 }
 
-  generatePath1() {
-    this.update();
-    this.generateAutonomousPath();
-  }
 
 
   generatePath() {
@@ -477,12 +506,6 @@ updateCalcRadiusOrientation() {
     console.log("generated using pathscript 1");
 
     }
-    else if (this.pathscript() === 2) {
-        console.log("generating using pathscript 2");
-        this.generateAutonomousPath2();
-        console.log("generated using pathscript 2");
-    }
-
     else if (this.pathscript() === 3) {
         console.log("generating using pathscript 3");
         this.generateAutonomousPath3();
@@ -693,13 +716,19 @@ updateCalcRadiusOrientation() {
 
 }
 
-
 function clearCanvas(reverseMode) {
   Line.instances = [];
   Circle.instances = [];
   Rectangle.instances = [];
   SimpleText.instances = [];
   path = new Path(new Spline(new Vector(0, 0), new Vector(0, 0), new Vector(0, 0), new Vector(0, 0)), reverseMode);
+  // Remove all angle input boxes
+  angleInputs.forEach(input => {
+    if (input.parentNode) {
+      input.parentNode.removeChild(input);
+    }
+  });
+  angleInputs = []; // Clear the list
   render();
   renderRobot({ x: 0, y: 0, theta: 0 });
 }
@@ -707,8 +736,3 @@ function clearCanvas(reverseMode) {
 document.getElementById('clearCanvasBtn').onclick = function() {
   clearCanvas(reverseMode);
 };
-document.getElementById('speedMode').addEventListener('change', function(event) {
-    console.log('Speed mode changed to:', event.target.value);
-    path.setSpeedMode(event.target.value);
-});
-

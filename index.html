@@ -48,27 +48,39 @@
                 <label for="multiplierSlider" class="text-gray-400">Point distance</label>
                 <input type="range" value="10" min="1" max="50" step="1" oninput="updateSpacing(this.value)" id="multiplierSlider" class="w-40">
                 <span id="multiplierValue" style="color: white;">10</span>
-            </div>
+                <div class="flex flex-col space-y-2">
+                    <label for="multiplierSlider" class="text-gray-400">Point distance</label>
+                    <input type="range" value="10" min="1" max="50" step="1" oninput="updateSpacing(this.value)" id="multiplierSlider" class="w-40">
+                    <span id="multiplierValue" style="color: white;">10</span>
+                    
+                    <div class="flex items-center space-x-2 mt-1">
+                        <select id="pointDistanceMode" class="bg-gray-300 text-black p-1 rounded-full">
+                            <option value="previous">Previous</option>
+                            <option value="future">Future</option>
+                        </select>
+                    </div>
+                </div>
             <div class="flex flex-col space-y-2">
                 <label for="CalcRad" class="text-gray-400">Calc radius</label>
                 <input type="range" value="10" min="1" max="100" step="1" oninput="this.nextElementSibling.value = this.value" id="CalcRadSlider" class="w-40">
                 <output class="text" id="CalcRadius" style="color: white;">10</output>
             </div>
-            <div class="flex flex-col space-y-2">
-                <label for="robotWidthSlider" class="text-gray-400">Robot Width</label>
-                <input type="range" value="40" min="10" max="100" step="1" oninput="this.nextElementSibling.value = this.value" id="robotWidthSlider" class="w-40">
-                <output class="text" id="robotWidthVal" style="color: white;">40</output>
-            </div>
-            <div class="flex flex-col space-y-2">
-                <label for="robotHeightSlider" class="text-gray-400">Robot Height</label>
-                <input type="range" value="20" min="10" max="100" step="1" oninput="this.nextElementSibling.value = this.value" id="robotHeightSlider" class="w-40">
-                <output class="text" id="robotHeightVal" style="color: white;">20</output>
-            </div>
+            
             <div class="flex flex-col space-y-2">
                 <label for="speedMode" class="text-gray-400">Speed Mode</label>
                 <select id="speedMode" class="w-32 bg-gray-300 text-black p-2 rounded-full mt-2">
                     <option value="calculated">Calculated</option>
                     <option value="constant">Constant</option>
+                </select>
+            </div>
+            <div class="flex flex-col space-y-2">
+                <label for="movementType" class="text-gray-400">Movement Type</label>
+                <select id="movementType" class="w-32 bg-gray-300 text-black p-2 rounded-full mt-2">
+                    <option value="regular">Regular</option>
+                    <option value="point">Move To Point</option>
+                    <option value="PID">PID</option>
+                    <option value="turn">Turn</option>
+
                 </select>
             </div>
             <button id="clearCanvasBtn" class="bg-blue-300 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Clear</button>
@@ -84,14 +96,23 @@
                 <input type="range" value="10" min="1" max="50" step="1" oninput="this.nextElementSibling.value = this.value" id="SimSpeed">
                 <output class="text" id="SimulationSpeedOutput" style="color: white;">10</output>
                 </div>
+                <div class="flex flex-col space-y-2">
+                    <label for="robotWidthSlider" class="text-gray-400">Robot Width</label>
+                    <input type="range" value="40" min="10" max="100" step="1" oninput="this.nextElementSibling.value = this.value" id="robotWidthSlider" class="w-40">
+                    <output class="text" id="robotWidthVal" style="color: white;">40</output>
+                </div>
+                <div class="flex flex-col space-y-2">
+                    <label for="robotHeightSlider" class="text-gray-400">Robot Height</label>
+                    <input type="range" value="20" min="10" max="100" step="1" oninput="this.nextElementSibling.value = this.value" id="robotHeightSlider" class="w-40">
+                    <output class="text" id="robotHeightVal" style="color: white;">20</output>
+                </div>
                 <!--button id="startTestBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">Start Test</button>
                 <button id="stopTestBtn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mt-4">Stop Test</button-->
                     <div class="flex flex-col space-y-2">
                         <label for="pathScriptMode" class="text-gray-400">Path Script</label>
                         <select id="pathScriptMode" class="w-32 bg-gray-300 text-black p-2 rounded-full mt-2">
                             <option value="Method0"> 1</option>
-                            <option value="Method1"> 2</option>
-                            <option value="Method2"> 3</option>
+                            <option value="Method2"> 2</option>
                         </select>
                     </div>
             </div>
@@ -149,8 +170,8 @@
     
             <div class="mb-4">
                 <label for="frictionCoefficient" class="block text-gray-700 font-bold mb-2">Friction Coefficient (0-1)</label>
-                <input type="range" id="frictionCoefficient" min="0" max="0.01" value = "0.4" step="0.00001" class="w-full">
-                <output id="frictionCoefficientOutput" class="text-gray-700">0.001 </output>
+                <input type="range" id="frictionCoefficient" min="0" max="1" value = "0.4" step="0.001" class="w-full">
+                <output id="frictionCoefficientOutput" class="text-gray-700">0.4 </output>
             </div>
     
             <div class="mb-4">
@@ -183,10 +204,9 @@
     <script src="js/simulator.js"></script>
     
     <script src="js/path.js"></script>
-    <script src="js/path2.js"></script>
     
     
-    <!--script src="js/simulator2.js"></script-->
+    
     <script src="js/test.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', (event) => {
@@ -198,7 +218,22 @@
                     alert('Failed to copy code: ', err);
                 });
             };
+            const pointDistanceMode = document.getElementById('pointDistanceMode');
+    const multiplierSlider = document.getElementById('multiplierSlider');
 
+    pointDistanceMode.addEventListener('change', function() {
+        updateSpacing(multiplierSlider.value);
+    });
+
+    function updateSpacing(value) {
+        const isPreviousPoints = pointDistanceMode.value === 'previous';
+        document.getElementById('multiplierValue').textContent = value;
+        if (path) {
+            path.updatePointDistances(Number(value), isPreviousPoints);
+        }
+    }
+
+    updateSpacing(multiplierSlider.value);
             document.getElementById('clearCodeBtn').onclick = function() {
                 document.getElementById('generatedCodeArea').value = '';
             };

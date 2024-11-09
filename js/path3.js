@@ -131,11 +131,19 @@ class Path {
   }
 
   generateAutonomousPath3() {
+    this.updateMaxRPM();
+    this.updateGearRatio1();
+    this.updateGearRatio2();
+    this.updateWheelRadius();
+    this.updateFrictionCoefficient();
+    this.updateCalcRadiusOrientation();
+    this.updateSpeedCalcMode();
+
     let movements = [];
     let firstPoint = this.points[0];
     let secondPoint = this.points[1];
     let initialTheta = this.calculateTheta(firstPoint, secondPoint);
-    movements.push(`odom->set_pose({${firstPoint.x.toFixed(1)}, ${firstPoint.y.toFixed(1)}, ${initialTheta.toFixed(1)}});`);
+    movements.push(`chassis.setPose(${firstPoint.x.toFixed(1)}, ${firstPoint.y.toFixed(1)}, ${initialTheta.toFixed(1)});`);
 
     for (let i = 1; i < this.points.length; i++) {
       let point = this.points[i];
@@ -149,21 +157,16 @@ class Path {
       }
       point.theta = theta;
 
-      let flag;
-      if (i === this.points.length - 1) {
-        flag = point.reverse ? 'gfr::Flags::REVERSE' : 'gfr::Flags::NONE';
-      } else {
-        flag = point.reverse ? 'gfr::Flags::THRU | gfr::Flags::REVERSE' : 'gfr::Flags::THRU';
-      }
+      let speed = this.calculateSpeed2(i);
+      let forwards = !point.reverse;
 
-      const speed = this.calculateSpeed2(i);
-
-      movements.push(`chassis.move({${point.x.toFixed(1)}, ${point.y.toFixed(1)}, ${theta.toFixed(1)}}, boomerang, ${speed.toFixed(1)}, ${flag});`);
+      movements.push(`chassis.moveToPose(${point.x.toFixed(1)}, ${point.y.toFixed(1)}, ${theta.toFixed(1)}, 3000, {.forwards = ${forwards}, .horizontalDrift = 45, .lead = 0.1, .maxSpeed = ${speed.toFixed(1)}});`);
+      movements.push(`chassis.waitUntil(fabs(chassis.getPose().distance(lemlib::Pose(${point.x.toFixed(1)},${point.y.toFixed(1)})))-2);`);
+      movements.push('chassis.cancelAllMotions();');
     }
 
     const generatedCode = movements.join('\n');
     console.log(generatedCode);
-
     document.getElementById('generatedCodeArea').value = generatedCode;
   }
 
